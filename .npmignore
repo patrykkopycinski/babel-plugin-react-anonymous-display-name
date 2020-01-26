@@ -1,0 +1,9 @@
+# by default, ignore everything
+*
+*/**
+
+# allow these files to be published
+!dist/**
+!LICENSE
+!README.md
+!package.json

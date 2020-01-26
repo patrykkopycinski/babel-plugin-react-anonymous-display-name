@@ -1,0 +1,40 @@
+{
+  "name": "babel-plugin-react-anonymous-display-name",
+  "version": "0.0.1",
+  "description": "Automatically add displayName properties to your React project.",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/patrykkopycinski/babel-plugin-react-display-name"
+  },
+  "scripts": {
+    "build": "babel src --extensions .ts --out-dir lib --delete-dir-on-start",
+    "test": "jest",
+    "lint": "tsc -p src && tsc -p tests && prettier --loglevel warn --write \"**/*.{ts,tsx,js,json,md}\"",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "babel-plugin",
+    "react",
+    "display",
+    "name",
+    "anonymous",
+    "memo",
+    "forwardRef"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.3",
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "@babel/preset-typescript": "^7.8.3",
+    "@types/jest": "^24.9.1",
+    "@types/node": "^10.0.0",
+    "jest": "^25.1.0",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.5"
+  }
+}
