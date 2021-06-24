@@ -5,40 +5,56 @@ const SUPPORTED_HOCS = ['forwardRef', 'memo'];
 const isAnonymousComponent = (
   t: typeof types,
   callee: types.Expression | types.V8IntrinsicIdentifier
-) =>
-  // memo((props) => *) case
-  (t.isIdentifier(callee) && SUPPORTED_HOCS.includes(callee.name)) ||
-  // React.memo((props) => *) case
-  (t.isMemberExpression(callee) &&
-    SUPPORTED_HOCS.includes(callee.property.name));
+) => {
+  if (t.isIdentifier(callee) && SUPPORTED_HOCS.includes(callee.name)) {
+    return true;
+  }
 
+  if (t.isMemberExpression(callee)) {
+    const { property } = callee;
+
+    if (t.isIdentifier(property) && SUPPORTED_HOCS.includes(property.name)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+// eslint-disable-next-line import/no-default-export
 export default ({ types: t }: typeof babel): PluginObj => ({
   visitor: {
-    VariableDeclarator(path) {
-      if (
-        t.isIdentifier(path.node.id) &&
-        t.isCallExpression(path.node.init) &&
-        t.isArrowFunctionExpression(path.node.init.arguments[0]) &&
-        isAnonymousComponent(t, path.node.init.callee)
-      ) {
-        path.replaceWith(
-          t.variableDeclarator(
-            t.identifier(path.node.id.name),
-            t.callExpression(path.node.init.callee, [
-              t.functionExpression(
-                t.identifier(path.node.id.name),
-                path.node.init.arguments[0].params,
-                // is memo((props) => { return *; }) case
-                t.isBlockStatement(path.node.init.arguments[0].body)
-                  ? path.node.init.arguments[0].body
-                  : t.blockStatement([
-                      t.returnStatement(path.node.init.arguments[0].body)
-                    ])
-              )
-            ])
-          )
-        );
-      }
+    VariableDeclaration(path) {
+      const declarators = path.get('declarations');
+
+      declarators.forEach((declarator) => {
+        if (
+          t.isIdentifier(declarator.node.id) &&
+          t.isCallExpression(declarator.node.init) &&
+          t.isArrowFunctionExpression(declarator.node.init.arguments[0]) &&
+          isAnonymousComponent(t, declarator.node.init.callee)
+        ) {
+          declarator.replaceWith(
+            t.variableDeclarator(
+              t.identifier(declarator.node.id.name),
+              t.callExpression(declarator.node.init.callee, [
+                t.functionExpression(
+                  t.identifier(declarator.node.id.name),
+                  declarator.node.init.arguments[0].params,
+                  // is memo((props) => { return *; }) case
+                  t.isBlockStatement(declarator.node.init.arguments[0].body)
+                    ? declarator.node.init.arguments[0].body
+                    : t.blockStatement([
+                        t.returnStatement(
+                          declarator.node.init.arguments[0].body
+                        )
+                      ])
+                )
+              ])
+            )
+          );
+        }
+      });
     }
   }
 });
