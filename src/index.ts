@@ -1,10 +1,10 @@
-import babel, { PluginObj, types } from '@babel/core';
+import * as babel from '@babel/core';
 
 const SUPPORTED_HOCS = ['forwardRef', 'memo'];
 
 const isAnonymousComponent = (
-  t: typeof types,
-  callee: types.Expression | types.V8IntrinsicIdentifier
+  t: typeof babel.types,
+  callee: babel.types.Expression | babel.types.V8IntrinsicIdentifier
 ) => {
   if (t.isIdentifier(callee) && SUPPORTED_HOCS.includes(callee.name)) {
     return true;
@@ -21,8 +21,7 @@ const isAnonymousComponent = (
   return false;
 };
 
-// eslint-disable-next-line import/no-default-export
-export default ({ types: t }: typeof babel): PluginObj => ({
+export default ({ types: t }: typeof babel): babel.PluginObj => ({
   visitor: {
     VariableDeclaration(path) {
       const declarators = path.get('declarations');

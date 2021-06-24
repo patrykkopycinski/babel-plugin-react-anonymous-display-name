@@ -1,6 +1,11 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"]
-  }
+    "types": ["node"],
+    "outDir": "../lib",
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "files": ["./index.ts"]
 }
