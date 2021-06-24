@@ -1,10 +1,14 @@
-import { transform } from '@babel/core';
+import { transform, PluginItem } from '@babel/core';
 import plugin from '../src';
 
-function run(source: string) {
+function run(source: string, otherPlugins?: PluginItem[]) {
+  const plugins: PluginItem[] = [plugin];
+  if (otherPlugins) {
+    plugins.push(...otherPlugins);
+  }
   const { code } = transform(source, {
     filename: 'test.ts',
-    plugins: [plugin]
+    plugins
   })!;
   return code;
 }
@@ -265,5 +269,33 @@ test('handle "memo" with params usage', () => {
     }) {
       return <Loader show={show} hide={hide} />;
     });"
+  `);
+});
+
+test('handle transform with react-refresh/babel', () => {
+  const source = `
+    const Hello4 = React.memo(() => null);
+    const Hello5 = memo(() => null);
+  `;
+
+  expect(run(source, [['react-refresh/babel', { skipEnvCheck: true }]]))
+    .toMatchInlineSnapshot(`
+    "\\"use strict\\";
+
+    const Hello4 = React.memo(_c = function Hello4() {
+      return null;
+    });
+    _c2 = Hello4;
+    const Hello5 = memo(_c3 = function Hello5() {
+      return null;
+    });
+    _c4 = Hello5;
+
+    var _c, _c2, _c3, _c4;
+
+    $RefreshReg$(_c, \\"Hello4$React.memo\\");
+    $RefreshReg$(_c2, \\"Hello4\\");
+    $RefreshReg$(_c3, \\"Hello5$memo\\");
+    $RefreshReg$(_c4, \\"Hello5\\");"
   `);
 });
