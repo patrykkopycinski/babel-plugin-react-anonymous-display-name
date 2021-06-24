@@ -4,6 +4,7 @@
 
 # allow these files to be published
 !dist/**
+!lib/**
 !LICENSE
 !README.md
 !package.json
