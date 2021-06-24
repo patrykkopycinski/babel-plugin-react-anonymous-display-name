@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-react-anonymous-display-name",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Automatically add displayName properties to your React project.",
   "main": "lib/index.js",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "url": "https://github.com/patrykkopycinski/babel-plugin-react-display-name"
   },
   "scripts": {
-    "build": "babel src --extensions .ts --out-dir lib --delete-dir-on-start",
+    "build": "babel src --extensions .ts --out-dir lib --delete-dir-on-start && tsc --project src/tsconfig.json --outDir lib",
     "test": "jest",
     "lint": "tsc -p src && tsc -p tests && prettier --loglevel warn --write \"**/*.{ts,tsx,js,json,md}\"",
     "prepare": "npm run build"
