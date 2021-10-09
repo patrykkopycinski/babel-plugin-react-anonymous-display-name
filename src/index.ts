@@ -2,9 +2,10 @@ import * as babel from '@babel/core';
 
 const SUPPORTED_HOCS = ['forwardRef', 'memo'];
 
-const isAnonymousComponent = (hocs: string[]) => (
+const isAnonymousComponent = (
   t: typeof babel.types,
-  callee: babel.types.Expression | babel.types.V8IntrinsicIdentifier
+  callee: babel.types.Expression | babel.types.V8IntrinsicIdentifier,
+  hocs: string[]
 ) => {
   if (t.isIdentifier(callee) && hocs.includes(callee.name)) {
     return true;
@@ -21,14 +22,14 @@ const isAnonymousComponent = (hocs: string[]) => (
   return false;
 };
 
-const isNotNamed = (t: typeof babel.types, node: object) => {
+const isNamedAlready = (t: typeof babel.types, node: object) => {
   if (t.isArrowFunctionExpression(node)) {
-    return true;
+    return false;
   }
   if (t.isFunctionExpression(node)) {
-    return !node.id;
+    return Boolean(node.id);
   }
-  return false;
+  return true;
 };
 
 export default ({
@@ -48,8 +49,8 @@ export default ({
         }
         const firstArgument = declarator.node.init.arguments[0] as any;
         if (
-          !isNotNamed(t, firstArgument) ||
-          !isAnonymousComponent(hocs)(t, declarator.node.init.callee)
+          isNamedAlready(t, firstArgument) ||
+          !isAnonymousComponent(t, declarator.node.init.callee, hocs)
         ) {
           return;
         }
