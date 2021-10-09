@@ -2,18 +2,18 @@ import * as babel from '@babel/core';
 
 const SUPPORTED_HOCS = ['forwardRef', 'memo'];
 
-const isAnonymousComponent = (
+const isAnonymousComponent = (hocs: string[]) => (
   t: typeof babel.types,
   callee: babel.types.Expression | babel.types.V8IntrinsicIdentifier
 ) => {
-  if (t.isIdentifier(callee) && SUPPORTED_HOCS.includes(callee.name)) {
+  if (t.isIdentifier(callee) && hocs.includes(callee.name)) {
     return true;
   }
 
   if (t.isMemberExpression(callee)) {
     const { property } = callee;
 
-    if (t.isIdentifier(property) && SUPPORTED_HOCS.includes(property.name)) {
+    if (t.isIdentifier(property) && hocs.includes(property.name)) {
       return true;
     }
   }
@@ -21,17 +21,28 @@ const isAnonymousComponent = (
   return false;
 };
 
-export default ({ types: t }: typeof babel): babel.PluginObj => ({
+const isNotNamed = (t: typeof babel.types, node: object) => {
+  if (t.isArrowFunctionExpression(node)) {
+    return true;
+  }
+  if (t.isFunctionExpression(node)) {
+    return !node.id;
+  }
+  return false;
+}
+
+export default ({ types: t }: typeof babel): babel.PluginObj<{hocs?: string[]}> => ({
   visitor: {
-    VariableDeclaration(path) {
+    VariableDeclaration(path, state) {
+      const hocs = state.hocs ?? SUPPORTED_HOCS;
       const declarators = path.get('declarations');
 
       declarators.forEach((declarator) => {
         if (
           t.isIdentifier(declarator.node.id) &&
           t.isCallExpression(declarator.node.init) &&
-          t.isArrowFunctionExpression(declarator.node.init.arguments[0]) &&
-          isAnonymousComponent(t, declarator.node.init.callee)
+          isNotNamed(t, declarator.node.init.arguments[0]) &&
+          isAnonymousComponent(hocs)(t, declarator.node.init.callee)
         ) {
           declarator.replaceWith(
             t.variableDeclarator(
@@ -48,7 +59,8 @@ export default ({ types: t }: typeof babel): babel.PluginObj => ({
                           declarator.node.init.arguments[0].body
                         )
                       ])
-                )
+                ),
+                ...declarator.node.init.arguments.slice(1),
               ])
             )
           );
