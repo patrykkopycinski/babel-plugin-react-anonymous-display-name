@@ -34,10 +34,10 @@ const isNamedAlready = (t: typeof babel.types, node: object) => {
 
 export default ({
   types: t
-}: typeof babel): babel.PluginObj<{ hocs?: string[] }> => ({
+}: typeof babel): babel.PluginObj<{opts: { hocs?: string[] }}> => ({
   visitor: {
     VariableDeclaration(path, state) {
-      const hocs = state.hocs ?? SUPPORTED_HOCS;
+      const hocs = state.opts.hocs ?? SUPPORTED_HOCS;
       const declarators = path.get('declarations');
 
       declarators.forEach((declarator) => {
