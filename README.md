@@ -53,6 +53,19 @@ const Memo = React.memo(function Memo() {
 });
 ```
 
+### Babel Config
+
+```js
+{
+  plugins: [
+    ["babel-plugin-react-anonymous-display-name", {
+      "hocs": ['memo', 'forwardRef'], // optional
+    }]
+  ]
+}
+
+```
+
 ### Eslint plugin
 
 As you don't have to set `displayName` manually anymore, here is Eslint plugin that will help you to find places where you defined `displayName` on `memo()` components:

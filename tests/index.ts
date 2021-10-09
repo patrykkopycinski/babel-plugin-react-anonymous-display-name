@@ -14,9 +14,9 @@ function run(source: string, otherPlugins?: PluginItem[]) {
 }
 
 describe('supported HOC', () => {
-  test('anonymous arrow function', () => {
+  test('anonymous function', () => {
     const source = `
-      const Hello4 = React.memo(() => null);
+      const Hello4 = React.memo(function () { return null }, isEqual);
     `;
 
     expect(run(source)).toMatchInlineSnapshot(`
@@ -24,7 +24,21 @@ describe('supported HOC', () => {
 
       const Hello4 = React.memo(function Hello4() {
         return null;
-      });"
+      }, isEqual);"
+    `);
+  });
+
+  test('anonymous arrow function', () => {
+    const source = `
+      const Hello4 = React.memo(() => null, isEqual);
+    `;
+
+    expect(run(source)).toMatchInlineSnapshot(`
+      "\\"use strict\\";
+
+      const Hello4 = React.memo(function Hello4() {
+        return null;
+      }, isEqual);"
     `);
   });
 
@@ -297,5 +311,24 @@ test('handle transform with react-refresh/babel', () => {
     $RefreshReg$(_c2, \\"Hello4\\");
     $RefreshReg$(_c3, \\"Hello5$memo\\");
     $RefreshReg$(_c4, \\"Hello5\\");"
+  `);
+});
+
+test('handle custom hocs', () => {
+  const source = `
+    const Hello4 = observer(() => null);
+  `;
+
+  const { code } = transform(source, {
+    filename: 'test.ts',
+    plugins: [[plugin, { hocs: ['observer'] }]]
+  })!;
+
+  expect(code).toMatchInlineSnapshot(`
+    "\\"use strict\\";
+
+    const Hello4 = observer(function Hello4() {
+      return null;
+    });"
   `);
 });
